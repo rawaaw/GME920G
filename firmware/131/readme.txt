@@ -1,0 +1,2 @@
+131_modified_config.ext2.zip - GATEWAY_IP = 10.138.3.66 SLAVE_IP = 192.168.1.100/SLAVE_NETMASK=255.255.255.0
+131_modified_userfs.ext2.zip - deleted default files; i2c tools, lua, busybox; modified generation /etc/config.sh in 2_prepare-config-script

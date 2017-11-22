@@ -1,0 +1,18 @@
+   RJ9:
+               
+Rx   Tx   W/D  GND(cpu) 
+ |    |    |    |
+Yel Green Red Black
+ |    |    |    |
+Blue W/Gr Oran W/Orange
+           |    |
+   :RJ45   +====+
+
+===
+
+Rx - 100 Om - DTXD (X401_1)
+Tx - 100 Om - DRXD (X401_2)
+W/D - 100 0m - to GND(cpu) (lock watch dog timer)
+
+CPU GND differs external GND pin !!!!
+

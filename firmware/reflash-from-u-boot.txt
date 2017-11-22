@@ -1,0 +1,21 @@
+пример для 131 прошивки, но для 130 тоде самое, кроме длин.
+в качестве tftp сервера использовал 3Cdaemon (http://www.firewall.cx/downloads/16-1-3cdaemon-server-a-client.html)
+
+1580740 Nov 10 12:59 linux.gz  181EC4
+2184452 Nov 10 13:07 initrd.gz 215504
+
+
+setenv ipaddr 192.168.1.100
+setenv netmask 255.255.255.0
+setenv serverip 192.168.1.2
+tftpboot 20008000 linux.gz
+tftpboot 20a00000 initrd.gz
+
+iminfo 0x20008000
+iminfo 0x20a00000
+
+#erase 10020000 101AFFFF
+cp.b 20008000 10020000 181EC4
+
+#erase 10200000 1041FFFF
+cp.b 20a00000 10200000 215504

@@ -1,0 +1,4 @@
+1. make changes in /mnt/config/config
+2. umount /mnt/config
+3. /bin/flashw -o 0x7f0000 -f /tmp/config.ext2 /dev/mtd0
+4. mount  -o loop /tmp/config.ext2 /mnt/config

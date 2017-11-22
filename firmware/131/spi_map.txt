@@ -1,0 +1,4 @@
+0x20000  - linux.bin (gz)
+0x200000 - initrd (gz)
+0x500000 - userfs
+0x7F0000 - configfs

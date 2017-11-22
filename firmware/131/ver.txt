@@ -1,0 +1,2 @@
+# cat /proc/sys/kernel/version
+#131 Tue Dec 11 10:43:01 MSK 2007
