@@ -1,0 +1,2 @@
+Sending & Recieving SMS with chat:
+https://n00bsys0p.wordpress.com/2009/08/26/sending-recieving-sms-with-a-3g-device-in-linux/
