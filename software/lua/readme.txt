@@ -6,3 +6,9 @@ AT+CEER
 +CEER: 1,0,4,137
 
 OK
+
+/mnt/userfs/usr/bin # chat -t 2 -e "" "AT+CREG?" "OK" >/dev/ttyS1 </dev/ttyS1
+AT+CREG?
++CREG: 0,2
+
+OK
