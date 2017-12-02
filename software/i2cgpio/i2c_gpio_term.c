@@ -9,7 +9,7 @@ void am2320_delay(uint32_t val){
   return;
 }
 
-uint8_t am2320_wakeup(uint8_t gpio_line, uint8_t gpio_inv_line){
+uint8_t am2320_wakeup(uint8_t scl_gpio_line, uint8_t scl_gpio_inv_line, uint8_t gpio_line, uint8_t gpio_inv_line){
   uint8_t ack;
   int i;
 
@@ -18,11 +18,11 @@ uint8_t am2320_wakeup(uint8_t gpio_line, uint8_t gpio_inv_line){
 #endif
   /* i2c init */
   sda_high(gpio_line);
-  scl_high();
+  scl_high(scl_gpio_line);
   //am2320_delay(2000);
   /* start:*/ 
   sda_low(gpio_inv_line);
-  scl_low();
+  scl_low(scl_gpio_inv_line);
   
   /* address: */   
   for (i = 7; i >= 0; i --){
@@ -31,29 +31,29 @@ uint8_t am2320_wakeup(uint8_t gpio_line, uint8_t gpio_inv_line){
     }else{
       sda_low(gpio_inv_line);
     }      
-    scl_high();
-    scl_low();
+    scl_high(scl_gpio_line);
+    scl_low(scl_gpio_inv_line);
   }    
   /* ack */
   sda_high(gpio_line);
-  scl_high();
+  scl_high(scl_gpio_line);
   ack = sda_read(gpio_line);  
-  scl_low();
+  scl_low(scl_gpio_inv_line);
   sda_low(gpio_inv_line);
-  scl_high();
+  scl_high(scl_gpio_line);
   sda_high(gpio_line); /*<- stop*/
   return 0; 
 }
 
 
-uint8_t am2320_address(uint8_t rd_bit, uint8_t gpio_line, uint8_t gpio_inv_line){
+uint8_t am2320_address(uint8_t rd_bit, uint8_t scl_gpio_line, uint8_t scl_gpio_inv_line, uint8_t gpio_line, uint8_t gpio_inv_line){
   uint8_t ack;
   uint8_t addr = AM_ADDR | rd_bit;
   int i;
 
   /* start:*/ 
   sda_low(gpio_inv_line);
-  scl_low();
+  scl_low(scl_gpio_inv_line);
 #if defined DO_PRINTOUT && DO_PRINTOUT!=0
   printf("START\n");
 #endif
@@ -65,15 +65,15 @@ uint8_t am2320_address(uint8_t rd_bit, uint8_t gpio_line, uint8_t gpio_inv_line)
     }else{
       sda_low(gpio_inv_line);
     }      
-    scl_high();
-    scl_low();
+    scl_high(scl_gpio_line);
+    scl_low(scl_gpio_inv_line);
   }    
 #if defined DO_PRINTOUT && DO_PRINTOUT!=0
   printf("ADDR: 0x%.2X\n", addr);
 #endif
   /* ack */
   sda_high(gpio_line);
-  scl_high();
+  scl_high(scl_gpio_line);
   ack = sda_read(gpio_line);
   if (ack == 0){
 #if defined DO_PRINTOUT && DO_PRINTOUT!=0
@@ -85,13 +85,13 @@ uint8_t am2320_address(uint8_t rd_bit, uint8_t gpio_line, uint8_t gpio_inv_line)
     printf("NACK\n");
 #endif
   }
-  scl_low();
+  scl_low(scl_gpio_inv_line);
 //  am2320_delay(1);
 //  sda_high(gpio_line);
   return ack;
 }
 
-uint8_t am2320_command(uint8_t cmd, uint8_t gpio_line, uint8_t gpio_inv_line){
+uint8_t am2320_command(uint8_t cmd, uint8_t scl_gpio_line, uint8_t scl_gpio_inv_line, uint8_t gpio_line, uint8_t gpio_inv_line){
   uint8_t ack;
   int i;
 
@@ -104,12 +104,12 @@ uint8_t am2320_command(uint8_t cmd, uint8_t gpio_line, uint8_t gpio_inv_line){
     }else{
       sda_low(gpio_inv_line);
     }      
-    scl_high();
-    scl_low();
+    scl_high(scl_gpio_line);
+    scl_low(scl_gpio_inv_line);
   }    
   /* ack */
   sda_high(gpio_line);
-  scl_high();
+  scl_high(scl_gpio_line);
   ack = sda_read(gpio_line);
   if (ack == 0){
 #if defined DO_PRINTOUT && DO_PRINTOUT!=0
@@ -121,13 +121,13 @@ uint8_t am2320_command(uint8_t cmd, uint8_t gpio_line, uint8_t gpio_inv_line){
     printf("NACK\n");
 #endif
   }
-  scl_low();
+  scl_low(scl_gpio_inv_line);
 //  am2320_delay(1);
 //  sda_high(gpio_line);
   return ack;
 }
 
-uint8_t am2320_answer(uint8_t last_byte, uint8_t gpio_line, uint8_t gpio_inv_line){
+uint8_t am2320_answer(uint8_t last_byte, uint8_t scl_gpio_line, uint8_t scl_gpio_inv_line, uint8_t gpio_line, uint8_t gpio_inv_line){
   uint8_t ack = 0;
   uint8_t answer = 0;
   int i;
@@ -138,10 +138,10 @@ uint8_t am2320_answer(uint8_t last_byte, uint8_t gpio_line, uint8_t gpio_inv_lin
   for (i = 7; i >= 0; i --){
     sda_high(gpio_line); /* bug in pca:  */
     sda_high(gpio_line); 
-    scl_high();
+    scl_high(scl_gpio_line);
     ack = sda_read(gpio_line);
     answer |= ((ack & 0x1) << i);
-    scl_low();
+    scl_low(scl_gpio_inv_line);
   }    
   if (!last_byte){
 #if defined DO_PRINTOUT && DO_PRINTOUT!=0
@@ -153,8 +153,8 @@ uint8_t am2320_answer(uint8_t last_byte, uint8_t gpio_line, uint8_t gpio_inv_lin
     printf("master NACK\n");
 #endif
   }
-  scl_high();
-  scl_low();
+  scl_high(scl_gpio_line);
+  scl_low(scl_gpio_inv_line);
   if (!last_byte){
     sda_high(gpio_line);
   } 
@@ -164,11 +164,11 @@ uint8_t am2320_answer(uint8_t last_byte, uint8_t gpio_line, uint8_t gpio_inv_lin
   return answer;
 }
 
-uint8_t sda_stop(uint8_t gpio_line, uint8_t gpio_inv_line){
+uint8_t sda_stop(uint8_t scl_gpio_line, uint8_t scl_gpio_inv_line, uint8_t gpio_line, uint8_t gpio_inv_line){
 #if defined DO_PRINTOUT && DO_PRINTOUT!=0
   printf("STOP\n");
 #endif
-  scl_high();
+  scl_high(scl_gpio_line);
   sda_high(gpio_line);
   return 0;
 }
@@ -196,44 +196,56 @@ int main(int argc, char**argv){
   int ret_code = 0;
 
   uint8_t am2320_f3_answ[8];
-  uint8_t sda_line, sda_inv_line;
+  uint8_t scl_line, scl_inv_line, sda_line, sda_inv_line;
   uint16_t crc;
 
 /*  printf("%s\n", argv[1]);*/
-  if (argc != 2 || (argv[1][0] != '1' && argv[1][0] != '2')){
-    printf("Usage: am2320term {1,2}\n");
+  if (argc != 2 || (argv[1][0] != '1' && argv[1][0] != '2' && argv[1][0] != 'e')){
+    printf("Usage: am2320term {1,2,e}\n");
     exit(1);
   }
   if (argv[1][0] == '1'){
+    scl_line = GPIO_LINE1;
+    scl_inv_line = GPIO_INV_LINE1;
     sda_line = GPIO_LINE2;
     sda_inv_line = GPIO_INV_LINE2;
+  }else if (argv[1][0] == '2'){
+    scl_line = GPIO_LINE3;
+    scl_inv_line = GPIO_INV_LINE3;
+    sda_line = GPIO_LINE4;
+    sda_inv_line = GPIO_INV_LINE4;
   }else{
-    sda_line = GPIO_LINE3;
-    sda_inv_line = GPIO_INV_LINE3;
+    /* emulator mode */
+    printf("HUM%c:%0.1f TEMP%c:%0.1f\n", 
+           argv[1][0],
+           89.1, 
+           argv[1][0],
+           10.1);
+    return 0;
   }
 
   if (pca9533_open() == 0){
 
     /* am2320 wakeup:  */
-    am2320_wakeup(sda_line, sda_inv_line);
+    am2320_wakeup(scl_line, scl_inv_line, sda_line, sda_inv_line);
     
     /* workong: */
-    am2320_address(0x00, sda_line, sda_inv_line); // WR
-    am2320_command(0x03, sda_line, sda_inv_line); // function code
-    am2320_command(0x00, sda_line, sda_inv_line); // staring address 
-    am2320_command(0x04, sda_line, sda_inv_line); // register length
-    sda_stop(sda_line, sda_inv_line);
+    am2320_address(0x00, scl_line, scl_inv_line, sda_line, sda_inv_line); // WR
+    am2320_command(0x03, scl_line, scl_inv_line, sda_line, sda_inv_line); // function code
+    am2320_command(0x00, scl_line, scl_inv_line, sda_line, sda_inv_line); // staring address 
+    am2320_command(0x04, scl_line, scl_inv_line, sda_line, sda_inv_line); // register length
+    sda_stop(scl_line, scl_inv_line, sda_line, sda_inv_line);
     am2320_delay(2); //wait for collecting data
-    am2320_address(0x01, sda_line, sda_inv_line); // RD
-    am2320_f3_answ[0] = am2320_answer(0, sda_line, sda_inv_line);
-    am2320_f3_answ[1] = am2320_answer(0, sda_line, sda_inv_line);
-    am2320_f3_answ[2] = am2320_answer(0, sda_line, sda_inv_line);
-    am2320_f3_answ[3] = am2320_answer(0, sda_line, sda_inv_line);
-    am2320_f3_answ[4] = am2320_answer(0, sda_line, sda_inv_line);
-    am2320_f3_answ[5] = am2320_answer(0, sda_line, sda_inv_line);
-    am2320_f3_answ[6] = am2320_answer(0, sda_line, sda_inv_line);
-    am2320_f3_answ[7] = am2320_answer(1, sda_line, sda_inv_line);
-    sda_stop(sda_line, sda_inv_line);
+    am2320_address(0x01, scl_line, scl_inv_line, sda_line, sda_inv_line); // RD
+    am2320_f3_answ[0] = am2320_answer(0, scl_line, scl_inv_line, sda_line, sda_inv_line);
+    am2320_f3_answ[1] = am2320_answer(0, scl_line, scl_inv_line, sda_line, sda_inv_line);
+    am2320_f3_answ[2] = am2320_answer(0, scl_line, scl_inv_line, sda_line, sda_inv_line);
+    am2320_f3_answ[3] = am2320_answer(0, scl_line, scl_inv_line, sda_line, sda_inv_line);
+    am2320_f3_answ[4] = am2320_answer(0, scl_line, scl_inv_line, sda_line, sda_inv_line);
+    am2320_f3_answ[5] = am2320_answer(0, scl_line, scl_inv_line, sda_line, sda_inv_line);
+    am2320_f3_answ[6] = am2320_answer(0, scl_line, scl_inv_line, sda_line, sda_inv_line);
+    am2320_f3_answ[7] = am2320_answer(1, scl_line, scl_inv_line, sda_line, sda_inv_line);
+    sda_stop(scl_line, scl_inv_line, sda_line, sda_inv_line);
     am2320_delay(6);
 
     crc = crc16(am2320_f3_answ, 6);

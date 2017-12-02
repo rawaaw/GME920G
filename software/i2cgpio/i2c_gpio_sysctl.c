@@ -85,7 +85,7 @@ uint8_t pca9533_read(void){
 int pca9533_write(uint8_t line_state){
   int ret = 0;
 
-  uint8_t ls0_reg = (~line_state & GPIO_LINE1) | ((~line_state & GPIO_LINE2) << 1) | ((~line_state & GPIO_LINE3) << 2);
+  uint8_t ls0_reg = (~line_state & GPIO_LINE1) | ((~line_state & GPIO_LINE2) << 1) | ((~line_state & GPIO_LINE3) << 2) | ((~line_state & GPIO_LINE4) << 3);
 
   s_gpio_line_state = line_state;
 
@@ -102,20 +102,20 @@ int pca9533_close(void){
 }
 
 /* SCL - digital i/o: 1*/
-int scl_high(void){
+int scl_high(uint8_t line){
   int ret;
-  ret = pca9533_write((s_gpio_line_state | GPIO_LINE1));
+  ret = pca9533_write((s_gpio_line_state | line /*GPIO_LINE1*/));
 #if defined DEBUG_ON && DEBUG_ON >=2
-  printf("->>>>scl_high:SCL=1 SDA1=%d SDA2=%d\n", ((s_gpio_line_state & GPIO_LINE2) >> 1), ((s_gpio_line_state & GPIO_LINE3) >> 2));
+  printf("->>>>scl_high:SCL1=%d SDA1=%d SCL2=%d SDA2=%d\n", (s_gpio_line_state & GPIO_LINE1), ((s_gpio_line_state & GPIO_LINE2) >> 1), ((s_gpio_line_state & GPIO_LINE3) >> 2), ((s_gpio_line_state & GPIO_LINE4) >> 3));
 #endif
   return ret;
 }
 
-int scl_low(void){
+int scl_low(uint8_t inv_line){
   int ret;
-  ret = pca9533_write((s_gpio_line_state & GPIO_INV_LINE1));
+  ret = pca9533_write((s_gpio_line_state & inv_line /*GPIO_INV_LINE1*/));
 #if defined DEBUG_ON && DEBUG_ON >=2
-  printf("->>>>scl_low: SCL=0 SDA1=%d SDA2=%d\n", ((s_gpio_line_state & GPIO_LINE2) >> 1), ((s_gpio_line_state & GPIO_LINE3) >> 2));
+  printf("->>>>scl_low: SCL1=%d SDA1=%d SCL2=%d SDA2=%d\n", (s_gpio_line_state & GPIO_LINE1), ((s_gpio_line_state & GPIO_LINE2) >> 1), ((s_gpio_line_state & GPIO_LINE3) >> 2), ((s_gpio_line_state & GPIO_LINE4) >> 3));
 #endif
   return ret;
 }
@@ -126,7 +126,7 @@ int sda_high(uint8_t line){
   int ret;
   ret = pca9533_write((s_gpio_line_state | line/*GPIO_LINE2*/));
 #if defined DEBUG_ON && DEBUG_ON >=2
-  printf("->>>>sda_high:SCL=%d SDA1=%d SDA2=%d\n", (s_gpio_line_state & GPIO_LINE1), ((s_gpio_line_state & GPIO_LINE2) >> 1), ((s_gpio_line_state & GPIO_LINE3) >> 2));
+  printf("->>>>sda_high:SCL1=%d SDA1=%d SCL2=%d SDA2=%d\n", (s_gpio_line_state & GPIO_LINE1), ((s_gpio_line_state & GPIO_LINE2) >> 1), ((s_gpio_line_state & GPIO_LINE3) >> 2), ((s_gpio_line_state & GPIO_LINE4) >> 3));
 #endif
   return ret;
 }
@@ -136,7 +136,7 @@ int sda_low(uint8_t inv_line){
   int ret;
   ret = pca9533_write((s_gpio_line_state & inv_line/*GPIO_INV_LINE2*/));
 #if defined DEBUG_ON && DEBUG_ON >=2
-  printf("->>>>sda_low: SCL=%d SDA1=%d SDA2=%d\n", (s_gpio_line_state & GPIO_LINE1), ((s_gpio_line_state & GPIO_LINE2) >> 1), ((s_gpio_line_state & GPIO_LINE3) >> 2));
+  printf("->>>>sda_low: SCL1=%d SDA1=%d SCL2=%d SDA2=%d\n", (s_gpio_line_state & GPIO_LINE1), ((s_gpio_line_state & GPIO_LINE2) >> 1), ((s_gpio_line_state & GPIO_LINE3) >> 2), ((s_gpio_line_state & GPIO_LINE4) >> 3));
 #endif
   return ret;
 }
@@ -146,7 +146,7 @@ uint8_t sda_read(uint8_t line){
   int ret;
   uint8_t rd = pca9533_read();
 #if defined DEBUG_ON && DEBUG_ON >=2
-  printf("->>>>>>sda_read:rd=%.2X SCL=%d SDA1=%d SDA2=%d\n", rd, (rd & GPIO_LINE1), ((rd & GPIO_LINE2) >> 1), ((rd & GPIO_LINE3) >> 2));
+  printf("->>>>>>sda_read:rd=%.2X SCL1=%d SDA1=%d SCL2=%d SDA2=%d\n", rd, (rd & GPIO_LINE1), ((rd & GPIO_LINE2) >> 1), ((rd & GPIO_LINE3) >> 2), , ((rd & GPIO_LINE4) >> 3));
 #endif
   if (rd == 0xFF)
     return 0xFF;
@@ -154,6 +154,8 @@ uint8_t sda_read(uint8_t line){
     return (((rd & GPIO_LINE2) >> 1) & 0x01);
   else if (line & GPIO_LINE3)
     return (((rd & GPIO_LINE3) >> 2) & 0x01);
+  else if (line & GPIO_LINE4)
+    return (((rd & GPIO_LINE4) >> 3) & 0x01);
   else
     return 0xFF;
 }

@@ -5,8 +5,8 @@ CFLAGS=-DDEBUG_ON=1 -O2 -D_GNU_SOURCE
 #.c.o:
 #	$(CC) -c $<
 
-i2c_gpio.o:i2c_gpio.c i2c_gpio.h
-	$(CC) -c $(CFLAGS) i2c_gpio.c -o i2c_gpio.o
+#i2c_gpio.o:i2c_gpio.c i2c_gpio.h
+#	$(CC) -c $(CFLAGS) i2c_gpio.c -o i2c_gpio.o
 
 i2c_gpio_sysctl.o:i2c_gpio_sysctl.c i2c_gpio.h
 	$(CC) -c $(CFLAGS) i2c_gpio_sysctl.c -o i2c_gpio_sysctl.o
