@@ -19,3 +19,12 @@ cp.b 20008000 10020000 181EC4
 
 #erase 10200000 1041FFFF
 cp.b 20a00000 10200000 215504
+
+====
+for test new kernel we may use 21000000 - ????????:
+
+e.g.:
+tftpboot 21008000 linux.gz
+tftpboot 21a00000 initrd.gz
+bootm 0x21008000 0x21a00000
+
