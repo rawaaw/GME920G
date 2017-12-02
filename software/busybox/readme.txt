@@ -5,3 +5,12 @@ make ARCH=arm CROSS_COMPILE=arm-linux- defconfig
 make ARCH=arm CROSS_COMPILE=arm-linux- menuconfig
 make ARCH=arm CROSS_COMPILE=arm-linux-
 make ARCH=arm CROSS_COMPILE=arm-linux- install CONFIG_PREFIX=/home/andrew/busybox-1.27.2/export/
+
+.config
+
+ash
+crontab
+less
+microcom
+tr
+vi

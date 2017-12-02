@@ -1,14 +1,5 @@
-Sending & Recieving SMS with chat:
-https://n00bsys0p.wordpress.com/2009/08/26/sending-recieving-sms-with-a-3g-device-in-linux/
+get_temp.lua - execute cron
+send_temp.lua - execute by cron
 
-/mnt/userfs/usr/bin # chat -t 2 -e "" "AT+CEER" "OK" >/dev/ttyS1 </dev/ttyS1
-AT+CEER
-+CEER: 1,0,4,137
+send_temp.sh - invokes by send_temp.lua
 
-OK
-
-/mnt/userfs/usr/bin # chat -t 2 -e "" "AT+CREG?" "OK" >/dev/ttyS1 </dev/ttyS1
-AT+CREG?
-+CREG: 0,2
-
-OK
