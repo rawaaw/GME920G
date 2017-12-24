@@ -1,0 +1,13 @@
+я меняю только первые 16KB (0000 - 3FFF):
+
+setenv serverip 192.168.1.252
+
+tftp 21000000 uboot_0_ffff.bin
+protect off 10000000 10003FFF
+erase 10000000 10003FFF
+cp.b 21000000 10000000 4000
+protect on 10000000 10003FFF
+
+#protect on 10000000 10005FFF
+#protect on 1000e000 1000FFFF
+

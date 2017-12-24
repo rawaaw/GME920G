@@ -1,0 +1,35 @@
+1580740 Nov 10 12:59 linux.gz  181EC4
+2184452 Nov 10 13:07 initrd.gz 215504
+
+
+setenv ipaddr 192.168.1.100
+setenv netmask 255.255.255.0
+setenv serverip 192.168.1.252
+tftpboot 20008000 linux.gz
+tftpboot 20a00000 initrd.gz
+
+iminfo 0x20008000
+iminfo 0x20a00000
+
+#erase 10020000 101AFFFF
+cp.b 20008000 10020000 181EC4
+
+#erase 10200000 1041FFFF
+cp.b 20a00000 10200000 215504
+
+====
+for test new kernel we may use 21000000 - ????????:
+
+e.g.:
+tftpboot 21008000 uImage
+tftpboot 21a00000 initrd.gz
+tftpboot 21a00000 initrd131.gz
+
+iminfo 0x21008000
+iminfo 0x21a00000
+
+#setenv bootargs root=/dev/ram rw initrd=20a00000,500000 ramdisk_size=32000 console=ttyS0,115200 mem=64M init=/bin/init
+#
+setenv bootargs root=/dev/ram rw initrd=20a00000,500000 ramdisk_size=16384 console=ttyS0,115200 mem=32M
+
+bootm 0x21008000 0x21a00000
