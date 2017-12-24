@@ -1,0 +1,8 @@
+                                                       cpubrd_bottom_180.jpg
+X401-4 - BGA F12 - AT91_PIN_PA27 (red LED)                 orange
+X401-5 - BGA G12 - AT91_PIN_PA28 (yel LED)                 yellow
+
+X402-2 - BGA J5  - AT91_PIN_PB28 (watchdog keeapalive)     purple
+X402-6 - BGA J6  - AT91_PIN_PA29 (modem reset)             green
+
+X401-38  power supply supervisor ?                         blue
