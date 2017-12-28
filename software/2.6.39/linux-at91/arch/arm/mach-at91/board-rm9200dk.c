@@ -200,6 +200,12 @@ static struct gpio_led dk_leds[] = {
 		.gpio			= AT91_PIN_PB28, // PB28 initializes reset schematic (reset_schematics.jpg)
 		.active_low		= 0,
 		.default_trigger	= "heartbeat",
+	},
+	{
+		.name			= "mdmrst",
+		.gpio			= AT91_PIN_PB29, // PB29 modem reset
+		.active_low		= 0,
+		.default_trigger	= "none",
 	}
 };
 
