@@ -29,6 +29,7 @@ df
 dumpleases
 echo
 false
+flock
 fsck
 grep
 gunzip

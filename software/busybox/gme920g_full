@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Busybox version: 1.27.2
-# Fri Dec 22 22:56:18 2017
+# Fri Dec 29 22:50:50 2017
 #
 CONFIG_HAVE_DOT_CONFIG=y
 
@@ -592,7 +592,7 @@ CONFIG_DEFAULT_DEPMOD_FILE="modules.dep"
 # CONFIG_FEATURE_GPT_LABEL is not set
 # CONFIG_FEATURE_FDISK_ADVANCED is not set
 # CONFIG_FINDFS is not set
-# CONFIG_FLOCK is not set
+CONFIG_FLOCK=y
 # CONFIG_FDFLUSH is not set
 # CONFIG_FREERAMDISK is not set
 # CONFIG_FSCK_MINIX is not set
