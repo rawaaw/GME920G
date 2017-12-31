@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Busybox version: 1.27.2
-# Fri Dec 29 22:50:50 2017
+# Sun Dec 31 18:59:59 2017
 #
 CONFIG_HAVE_DOT_CONFIG=y
 
@@ -1105,7 +1105,7 @@ CONFIG_ASH_CMDCMD=y
 #
 # Options common to all shells
 #
-# CONFIG_FEATURE_SH_MATH is not set
+CONFIG_FEATURE_SH_MATH=y
 # CONFIG_FEATURE_SH_MATH_64 is not set
 CONFIG_FEATURE_SH_EXTRA_QUIET=y
 # CONFIG_FEATURE_SH_STANDALONE is not set

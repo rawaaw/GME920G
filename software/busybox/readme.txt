@@ -1,12 +1,17 @@
 export PATH=/home/andrew/gcc-3.4.6-glibc-2.3.6/arm-linux/bin:$PATH
 apt-get install libncurses5-dev
 
+. ./set_env.sh
 make ARCH=arm CROSS_COMPILE=arm-linux- defconfig
 make ARCH=arm CROSS_COMPILE=arm-linux- menuconfig
+  -- use gme920g_full --
 make ARCH=arm CROSS_COMPILE=arm-linux-
 make ARCH=arm CROSS_COMPILE=arm-linux- install CONFIG_PREFIX=/home/andrew/busybox-1.27.2/export/
 
-.config
+mkrootfs.sh - make rootfs image
+mkuserfs.sh - make userfs image
+
+gme920g_full:
 
 [
 [[
