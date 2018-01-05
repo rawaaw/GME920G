@@ -23,7 +23,7 @@ INSTALL:
 
 on GME920G box console:
 
-cd /
+cd /tmp
 umount /mnt/userfs/
-tftp -r userfs.ext2 -g 192.168.1.2
+tftp -r userfs.ext2 -g 192.168.1.252
 savefs
