@@ -1,0 +1,27 @@
+MEMORY {
+        ram    : ORIGIN = 0x200000, LENGTH = 0x3000
+}
+
+SECTIONS {
+	.text : {
+		_stext = . ;
+		*(.text)
+		*(.rodata)
+		. = ALIGN(4);
+		_etext = . ;
+	} > ram
+	.data : {
+		_sdata = . ;
+		*(.data)
+		*(.glue_7*)
+		*(.rodata.str1.4)
+		. = ALIGN(4);
+		_edata = . ;
+	} > ram
+	.bss : {
+		_sbss = . ;
+		*(.bss)
+		. = ALIGN(4);
+		_ebss = . ;
+	} > ram
+}
