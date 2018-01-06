@@ -251,11 +251,16 @@ int main(int argc, char**argv){
     crc = crc16(am2320_f3_answ, 6);
 
     if ((am2320_f3_answ[6] == (crc & 0xFF)) && (am2320_f3_answ[7] == ((crc >> 8) & 0xFF))){
+//    if (1){
+//      am2320_f3_answ[4] = 0x00; //-10.1
+//      am2320_f3_answ[5] = 0x65;
+
       printf("HUM%c:%0.1f TEMP%c:%0.1f\n", 
              argv[1][0],
              (am2320_f3_answ[2]*256 + am2320_f3_answ[3])/10.0, 
              argv[1][0],
-             (am2320_f3_answ[4]*256 + am2320_f3_answ[5])/10.0);
+             (((am2320_f3_answ[4] & 0x7F)*256 + am2320_f3_answ[5])/10.0) * ((am2320_f3_answ[4] & 0x80)? -1.0:1.0)
+            );
       ret_code = 0;
     }else{
       ret_code = 1;

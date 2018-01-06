@@ -2,6 +2,8 @@
 #include <errno.h>
 #include "i2c_gpio.h"
 
+#define LM75A_NXP 1 // NXP temperature register is 11 bit (8 + 3x0.125)
+
 //#define DO_PRINTOUT 1
 #undef DO_PRINTOUT
 
@@ -185,14 +187,27 @@ int main(int argc, char**argv){
     printf("raw:%.2X %.2X\n", lm75a_answ[0], lm75a_answ[1]);
 #endif
 
+    // -54.875
+//    lm75a_answ[0] = 0xC9;
+//    lm75a_answ[1] = 0x20;
+
+#if !defined LM75A_NXP
     if (! (lm75a_answ[0] & 0x80)){  // temperatute >= 0
       temp = (float)lm75a_answ[0] + (lm75a_answ[1] >> 7) * 0.5;
     }else{
       temp = (0x100 - (unsigned int)lm75a_answ[0])*(-1.0) + (lm75a_answ[1] >> 7) * 0.5;
     }
+#else
+    if (! (lm75a_answ[0] & 0x80)){  // temperatute >= 0
+      temp = (float)lm75a_answ[0] + (lm75a_answ[1] >> 5) * 0.125;
+    }else{
+      temp = (0x100 - (unsigned int)lm75a_answ[0])*(-1.0) + (lm75a_answ[1] >> 5) * 0.125;
+    }
+#endif
 
     printf("TEMP%c:%0.1f\n", 
             argv[1][0], temp);
+
     ret_code = 0;
 
     pca9533_close();
