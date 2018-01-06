@@ -34,6 +34,7 @@ i2cgpio:i2c_gpio_sysctl.o i2c_gpio_example.o
 
 am2320term:i2c_gpio_sysctl.o i2c_gpio_term.o
 	$(CC) -o am2320term i2c_gpio_sysctl.o i2c_gpio_term.o
+	$(STRIP) am2320term
 
 lm75aterm:i2c_gpio_sysctl.o i2c_lm75a_term.o
 	$(CC) -o lm75aterm i2c_gpio_sysctl.o i2c_lm75a_term.o
