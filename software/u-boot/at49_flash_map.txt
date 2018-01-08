@@ -1,0 +1,8 @@
+0x10000000 0x10003FFF - boot.bin
+0x1000E000 0x1000FFFF - u-boot config
+0x10010000 0x1001FFFF - u-boot.bin (gz)
+
+0x10020000  - linux.bin (gz)
+0x10200000  - initrd (gz)
+0x10500000  - userfs
+0x107F0000  - configfs

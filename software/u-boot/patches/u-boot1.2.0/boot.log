@@ -1,0 +1,248 @@
+ # CCCCC
+-I- AT91F_LowLevelInit(): Debug channel initialized
+
+loader 1.0 (Jan  5 2018 - 22:13:54)
+
+XMODEM: Download U-BOOT
+CC
+U-Boot downloaded successfully
+
+
+U-Boot 1.2.0 (Jan  8 2018 - 18:07:47)
+
+U-Boot code: 21F00000 -> 21F17F74  BSS: -> 21F35A04
+RAM Configuration:
+Bank #0: 20000000 64 MB
+Atmel: AT49BV6416 (64Mbit)
+flash_protect ON: from 0x10000000 to 0x10005FFF
+protect on 0
+protect on 1
+protect on 2
+flash_protect ON: from 0x1000E000 to 0x1000FFFF
+protect on 7
+flash_protect ON: from 0x10010000 to 0x1001FFFF
+protect on 8
+Flash:  8 MB
+In:    serial
+Out:   serial
+Err:   serial
+eth_init()rtl8201.c:rtl8201_IsPhyConnected:51
+PHY not connected!!
+Link: 100baseTX Full Duplex
+### main_loop entered: bootdelay=3
+
+### main_loop: bootcmd="bootm 10020000 10200000"
+Hit any key to stop autoboot:  0
+## Booting image at 10020000 ...
+   Image Name:
+   Image Type:   ARM Linux Kernel Image (gzip compressed)
+   Data Size:    1576515 Bytes =  1.5 MB
+   Load Address: 20008000
+   Entry Point:  20008000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+## Loading Ramdisk Image at 10200000 ...
+   Image Name:
+   Image Type:   ARM Linux RAMDisk Image (gzip compressed)
+   Data Size:    2143523 Bytes =  2 MB
+   Load Address: 20a00000
+   Entry Point:  20a00000
+   Verifying Checksum ... OK
+## Transferring control to Linux (at address 20008000) ...
+
+Starting kernel ...
+
+Linux version 2.6.39GME920G 2.6.39-g5f90e26-dirty (andrew@u1604) (gcc version 4.9.4 (Linaro GCC 4.9-2017.01) ) #9 PREEMPT Sat Dec 30 15:59:34 MSK 2017
+CPU: ARM920T [41129200] revision 0 (ARMv4T), cr=00003177
+CPU: VIVT data cache, VIVT instruction cache
+Machine: GME920G
+Memory policy: ECC disabled, Data cache writeback
+Clocks: CPU 179 MHz, master 59 MHz, main 18.432 MHz
+Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 16256
+Kernel command line: root=/dev/ram rw initrd=20a00000,500000 ramdisk_size=32000 console=ttyS0,115200 mem=64M
+PID hash table entries: 256 (order: -2, 1024 bytes)
+Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
+Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
+Memory: 64MB = 64MB total
+Memory: 59680k/59680k available, 5856k reserved, 0K highmem
+Virtual kernel memory layout:
+    vector  : 0xffff0000 - 0xffff1000   (   4 kB)
+    fixmap  : 0xfff00000 - 0xfffe0000   ( 896 kB)
+    DMA     : 0xffc00000 - 0xffe00000   (   2 MB)
+    vmalloc : 0xc4800000 - 0xfee00000   ( 934 MB)
+    lowmem  : 0xc0000000 - 0xc4000000   (  64 MB)
+    modules : 0xbf000000 - 0xc0000000   (  16 MB)
+      .init : 0xc0008000 - 0xc0025000   ( 116 kB)
+      .text : 0xc0025000 - 0xc02e8fac   (2832 kB)
+      .data : 0xc02ea000 - 0xc03036e0   ( 102 kB)
+SLUB: Genslabs=13, HWalign=32, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+Preemptable hierarchical RCU implementation.
+        RCU-based detection of stalled CPUs is disabled.
+        Verbose stalled-CPUs detection is disabled.
+NR_IRQS:192
+AT91: 128 gpio irqs in 4 banks
+Console: colour dummy device 80x30
+console [ttyS0] enabled
+Calibrating delay loop... 29.69 BogoMIPS (lpj=148480)
+pid_max: default: 32768 minimum: 301
+Mount-cache hash table entries: 512
+CPU: Testing write buffer coherency: ok
+NET: Registered protocol family 16
+AT91: Power Management
+bio: create slab <bio-0> at 0
+usbcore: registered new interface driver usbfs
+usbcore: registered new interface driver hub
+usbcore: registered new device driver usb
+i2c-gpio i2c-gpio: using pins 57 (SDA) and 58 (SCL)
+Switching to clocksource 32k_counter
+Switched to NOHz mode on CPU #0
+NET: Registered protocol family 2
+IP route cache hash table entries: 1024 (order: 0, 4096 bytes)
+TCP established hash table entries: 2048 (order: 2, 16384 bytes)
+TCP bind hash table entries: 2048 (order: 1, 8192 bytes)
+TCP: Hash tables configured (established 2048 bind 2048)
+TCP reno registered
+UDP hash table entries: 256 (order: 0, 4096 bytes)
+UDP-Lite hash table entries: 256 (order: 0, 4096 bytes)
+NET: Registered protocol family 1
+Trying to unpack rootfs image as initramfs...
+rootfs image is not initramfs (no cpio magic); looks like an initrd
+Freeing initrd memory: 2092K
+NetWinder Floating Point Emulator V0.97 (double precision)
+NTFS driver 2.1.30 [Flags: R/W].
+JFFS2 version 2.2. (NAND) (SUMMARY)  © 2001-2006 Red Hat, Inc.
+msgmni has been set to 120
+io scheduler noop registered
+io scheduler deadline registered (default)
+atmel_usart.0: ttyS0 at MMIO 0xfefff200 (irq = 1) is a ATMEL_SERIAL
+atmel_usart.1: ttyS1 at MMIO 0xfffc4000 (irq = 7) is a ATMEL_SERIAL
+atmel_usart.2: ttyS2 at MMIO 0xfffcc000 (irq = 9) is a ATMEL_SERIAL
+atmel_usart.3: ttyS3 at MMIO 0xfffc8000 (irq = 8) is a ATMEL_SERIAL
+atmel_usart.4: ttyS4 at MMIO 0xfffc0000 (irq = 6) is a ATMEL_SERIAL
+brd: module loaded
+loop: module loaded
+nbd: registered device at major 43
+physmap platform flash device: 00800000 at 10000000
+physmap-flash.0: Found 1 x16 devices at 0x0 in 16-bit bank. Manufacturer ID 0x00001f Chip ID 0x0000d6
+Amd/Fujitsu Extended Query Table at 0x0041
+  Amd/Fujitsu Extended Query version 1.0.
+physmap-flash.0: Swapping erase regions for top-boot CFI table.
+number of CFI chips: 1
+cmdlinepart partition parsing not available
+RedBoot partition parsing not available
+Generic platform RAM MTD, (c) 2004 Simtec Electronics
+atmel_spi atmel_spi.0: Atmel SPI Controller at 0xfffe0000 (irq 13)
+m25p80 spi0.0: unrecognized JEDEC id ffffff
+m25p80 spi0.1: unrecognized JEDEC id ffffff
+PPP generic driver version 2.4.2
+PPP BSD Compression module registered
+tun: Universal TUN/TAP device driver, 1.6
+tun: (C) 1999-2004 Max Krasnyansky <maxk@qualcomm.com>
+at91_ether at91_ether: eth0: Features changed: 0x00004800 -> 0x00004000
+eth0: Link now 100-FullDuplex
+eth0: AT91 ethernet at 0xfefbc000 int=24 100-FullDuplex (12:34:56:78:9a:bc)
+eth0: Realtek RTL8201(B)L PHY
+ohci_hcd: USB 1.1 'Open' Host Controller (OHCI) Driver
+at91_ohci at91_ohci: AT91 OHCI
+at91_ohci at91_ohci: new USB bus registered, assigned bus number 1
+at91_ohci at91_ohci: irq 23, io mem 0x00300000
+hub 1-0:1.0: USB hub found
+hub 1-0:1.0: 1 port detected
+mousedev: PS/2 mouse device common for all mice
+rtc-ds1307 0-0068: rtc core: registered m41t00 as rtc0
+i2c /dev entries driver
+AT91 Watchdog Timer enabled (30 seconds, nowayout)
+cpuidle: using governor ladder
+cpuidle: using governor menu
+TCP cubic registered
+NET: Registered protocol family 17
+rtc-ds1307 0-0068: setting system clock to 2018-01-08 15:11:31 UTC (1515424291)
+RAMDISK: gzip image found at block 0
+VFS: Mounted root (ext2 filesystem) on device 1:0.
+Freeing init memory: 116K
+init started: BusyBox v1.27.2 (2017-12-29 22:27:44 MSK)
+remount root filesystem [ OK ]
+Creating temporary filesystem...
+Temporary filesystem created
+Copying config filesystem...
+1+0 records in
+1+0 records out
+65536 bytes (64.0KB) copied, 0.031311 seconds, 2.0MB/s
+Copying user filesystem...
+32+0 records in
+32+0 records out
+2097152 bytes (2.0MB) copied, 0.872253 seconds, 2.3MB/s
+mount user filesystem [ OK ]
+Starting at91 watchdog daemon...wdogd -t 2000 -T 60000 -S 86400000 -F=0 -v /dev/wdt
+The timeout was is 60 seconds
+Network: up lo interface  [ OK ]
+userfs presented, making symlinks
+check for user /bin [ OK ]
+check for user /home [ OK ]
+check for user /etc [ OK ]
+check for user inittab [ OK ]
+check security files: passwd group [ OK ]
+check for user rc [ FOUND ]
+# user rc, automaticaly created
+####################
+
+
+####################
+check for user /etc/ppp [ OK ]
+check for user /usr [ OK ]
+check for user boa configuration: not found, use defaults
+Starting user rc...
+chmod: /home/httpd/cgi-bin/conf: No such file or directory
+chmod: /home/httpd/html/config: No such file or directory
+Found init modules: 1_modem
+2_prepare-config-script
+3_boa_config
+4_lctime
+5_config_schema
+run 1_modem
+Reset modem...
+AT
+
+OK
+Get CSQ...
+
+Try to request CSQ
+Send request
+"ATE0;+CSQ
+"Read answer
+ATE0;+CSQ
++CSQ: 99,99
+
+OKanswer:
++CSQ: 99,99
+
+OK
+to parse:
+99,99
+
+OK
+CSQ is 99
+Resume booting...
+run 2_prepare-config-script
+
+eth0: Link now 100-FullDuplex
+eth0: Link now 100-FullDuplex
+
+run 3_boa_config
+run 4_lctime
+run 5_config_schema
+crond[572]: crond (busybox 1.27.2) started, log level 8
+
+GME902G LINUX 2.6.39
+
+~ # ping 192.168.1.2
+PING 192.168.1.2 (192.168.1.2): 56 data bytes
+64 bytes from 192.168.1.2: seq=0 ttl=128 time=11.017 ms
+64 bytes from 192.168.1.2: seq=1 ttl=128 time=0.855 ms
+64 bytes from 192.168.1.2: seq=2 ttl=128 time=0.793 ms
+64 bytes from 192.168.1.2: seq=3 ttl=128 time=0.763 ms
+^C
+--- 192.168.1.2 ping statistics ---
+4 packets transmitted, 4 packets received, 0% packet loss
+round-trip min/avg/max = 0.763/3.357/11.017 ms
+~ #

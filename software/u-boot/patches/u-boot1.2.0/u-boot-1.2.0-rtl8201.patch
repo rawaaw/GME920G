@@ -1,0 +1,638 @@
+diff -urN u-boot-1.2.0/board/at91rm9200dk/at91rm9200dk.c u-boot-1.2.0-rtl8201/board/at91rm9200dk/at91rm9200dk.c
+--- u-boot-1.2.0/board/at91rm9200dk/at91rm9200dk.c	2007-01-07 02:13:11.000000000 +0300
++++ u-boot-1.2.0-rtl8201/board/at91rm9200dk/at91rm9200dk.c	2018-01-08 18:07:34.526335585 +0300
+@@ -25,7 +25,7 @@
+ #include <common.h>
+ #include <asm/arch/AT91RM9200.h>
+ #include <at91rm9200_net.h>
+-#include <dm9161.h>
++#include <rtl8201.h>
+ 
+ DECLARE_GLOBAL_DATA_PTR;
+ 
+@@ -54,37 +54,25 @@
+ 	return 0;
+ }
+ 
+-int dram_init (void)
++int board_late_init(void)
+ {
+-	gd->bd->bi_dram[0].start = PHYS_SDRAM;
+-	gd->bd->bi_dram[0].size = PHYS_SDRAM_SIZE;
++	/* Fix Ethernet Initialization Bug when starting Linux from U-Boot */
++#if (CONFIG_COMMANDS & CFG_CMD_NET)
++#if defined DEBUG
++	printf("eth_init()");
++#endif
++	eth_init(gd->bd);
++#endif
+ 	return 0;
+ }
+ 
+-#ifdef CONFIG_DRIVER_ETHER
+-#if (CONFIG_COMMANDS & CFG_CMD_NET)
+-
+-/*
+- * Name:
+- *	at91rm9200_GetPhyInterface
+- * Description:
+- *	Initialise the interface functions to the PHY
+- * Arguments:
+- *	None
+- * Return value:
+- *	None
+- */
+-void at91rm9200_GetPhyInterface(AT91PS_PhyOps p_phyops)
++int dram_init (void)
+ {
+-	p_phyops->Init = dm9161_InitPhy;
+-	p_phyops->IsPhyConnected = dm9161_IsPhyConnected;
+-	p_phyops->GetLinkSpeed = dm9161_GetLinkSpeed;
+-	p_phyops->AutoNegotiate = dm9161_AutoNegotiate;
++	gd->bd->bi_dram[0].start = PHYS_SDRAM;
++	gd->bd->bi_dram[0].size = PHYS_SDRAM_SIZE;
++	return 0;
+ }
+ 
+-#endif	/* CONFIG_COMMANDS & CFG_CMD_NET */
+-#endif	/* CONFIG_DRIVER_ETHER */
+-
+ /*
+  * Disk On Chip (NAND) Millenium initialization.
+  * The NAND lives in the CS2* space
+diff -urN u-boot-1.2.0/config.mk u-boot-1.2.0-rtl8201/config.mk
+--- u-boot-1.2.0/config.mk	2007-01-07 02:13:11.000000000 +0300
++++ u-boot-1.2.0-rtl8201/config.mk	2007-08-17 17:39:24.000000000 +0400
+@@ -133,7 +133,7 @@
+ ARFLAGS = crv
+ endif
+ RELFLAGS= $(PLATFORM_RELFLAGS)
+-DBGFLAGS= -g # -DDEBUG
++DBGFLAGS= -g  -DDEBUG
+ OPTFLAGS= -Os #-fomit-frame-pointer
+ ifndef LDSCRIPT
+ #LDSCRIPT := $(TOPDIR)/board/$(BOARDDIR)/u-boot.lds.debug
+diff -urN u-boot-1.2.0/cpu/arm920t/at91rm9200/ether.c u-boot-1.2.0-rtl8201/cpu/arm920t/at91rm9200/ether.c
+--- u-boot-1.2.0/cpu/arm920t/at91rm9200/ether.c	2007-01-07 02:13:11.000000000 +0300
++++ u-boot-1.2.0-rtl8201/cpu/arm920t/at91rm9200/ether.c	2018-01-08 18:19:58.181499779 +0300
+@@ -24,6 +24,7 @@
+ #include <at91rm9200_net.h>
+ #include <net.h>
+ #include <miiphy.h>
++#include <rtl8201.h>
+ 
+ /* ----- Ethernet Buffer definitions ----- */
+ 
+@@ -31,6 +32,7 @@
+ 	unsigned long addr, size;
+ } rbf_t;
+ 
++#define PHY_ADDR       (0x10)              // OUR PHY address 20051018 wkj
+ #define RBF_ADDR      0xfffffffc
+ #define RBF_OWNER     (1<<0)
+ #define RBF_WRAP      (1<<1)
+@@ -114,11 +116,11 @@
+ 				     unsigned short *pInput)
+ {
+ 	p_mac->EMAC_MAN = (AT91C_EMAC_HIGH & ~AT91C_EMAC_LOW) |
+-			  (AT91C_EMAC_RW_R) |
++			  (AT91C_EMAC_RW_R) | (PHY_ADDR << 23) |
+ 			  (RegisterAddress << 18) |
+ 			  (AT91C_EMAC_CODE_802_3);
+ 
+-	udelay (10000);
++	udelay (100000);
+ 
+ 	*pInput = (unsigned short) p_mac->EMAC_MAN;
+ 
+@@ -263,6 +265,9 @@
+ 
+ void eth_halt (void)
+ {
++#if defined DEBUG
++	printf("\nrtl8201 halt requested\n");
++#endif
+ };
+ 
+ #if defined(CONFIG_MII) || (CONFIG_COMMANDS & CFG_CMD_MII)
+diff -urN u-boot-1.2.0/cpu/arm920t/at91rm9200/Makefile u-boot-1.2.0-rtl8201/cpu/arm920t/at91rm9200/Makefile
+--- u-boot-1.2.0/cpu/arm920t/at91rm9200/Makefile	2007-01-07 02:13:11.000000000 +0300
++++ u-boot-1.2.0-rtl8201/cpu/arm920t/at91rm9200/Makefile	2018-01-07 22:49:28.626072654 +0300
+@@ -25,8 +25,8 @@
+ 
+ LIB	= $(obj)lib$(SOC).a
+ 
+-COBJS	= bcm5221.o dm9161.o ether.o i2c.o interrupts.o \
+-	  lxt972.o serial.o usb_ohci.o
++COBJS	= rtl8201.o ether.o i2c.o interrupts.o \
++	  serial.o usb_ohci.o
+ SOBJS	= lowlevel_init.o
+ 
+ SRCS	:= $(SOBJS:.o=.S) $(COBJS:.o=.c)
+diff -urN u-boot-1.2.0/cpu/arm920t/at91rm9200/rtl8201.c u-boot-1.2.0-rtl8201/cpu/arm920t/at91rm9200/rtl8201.c
+--- u-boot-1.2.0/cpu/arm920t/at91rm9200/rtl8201.c	1970-01-01 03:00:00.000000000 +0300
++++ u-boot-1.2.0-rtl8201/cpu/arm920t/at91rm9200/rtl8201.c	2007-08-17 17:39:24.000000000 +0400
+@@ -0,0 +1,201 @@
++/*
++ *
++ * RTL8201 PHY driver
++ * (C) Copyright 2005
++ * Roman Avramenko <roman@imsystems.ru>
++ *
++ * (C) Copyright 2003
++ * Author : Hamid Ikdoumi (Atmel)
++ *
++ * See file CREDITS for list of people who contributed to this
++ * project.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
++
++#include <at91rm9200_net.h>
++#include <net.h>
++#include <rtl8201.h>
++
++#ifdef CONFIG_DRIVER_ETHER
++
++#if (CONFIG_COMMANDS & CFG_CMD_NET)
++
++/*
++ * Name:
++ *	rtl8201_IsPhyConnected
++ * Description:
++ *	Reads the 2 PHY ID registers
++ * Arguments:
++ *	p_mac - pointer to AT91S_EMAC struct
++ * Return value:
++ *	TRUE - if id read successfully
++ *	FALSE- if error
++ */
++static unsigned int rtl8201_IsPhyConnected (AT91PS_EMAC p_mac)
++{
++	unsigned short Id1, Id2;
++	printf("%s:%s:%d\n",__FILE__,__func__,__LINE__);
++	at91rm9200_EmacEnableMDIO (p_mac);
++	at91rm9200_EmacReadPhy (p_mac, RTL8201_PHYID1, &Id1);
++	at91rm9200_EmacReadPhy (p_mac, RTL8201_PHYID2, &Id2);
++	at91rm9200_EmacDisableMDIO (p_mac);
++
++	if ( Id1 == RTL8201_PHYID1_OUI  && Id2 == RTL8201_PHYID2_OUI ) {
++		printf("PHY: RTL8201(B)L detected\n");
++		return TRUE;
++	}
++
++	return FALSE;
++
++}
++
++/*
++ * Name:
++ *	rtl8201_GetLinkSpeed
++ * Description:
++ *	Link parallel detection status of MAC is checked and set in the
++ *	MAC configuration registers
++ * Arguments:
++ *	p_mac - pointer to MAC
++ * Return value:
++ *	TRUE - if link status set succesfully
++ *	FALSE - if link status not set
++ */
++static UCHAR rtl8201_GetLinkSpeed (AT91PS_EMAC p_mac)
++{
++	unsigned short stat1, stat2;
++
++	if (!at91rm9200_EmacReadPhy (p_mac, RTL8201_BMSR, &stat1))
++		return FALSE;
++
++	printf("Link: ");
++
++	if (!(stat1 & RTL8201_LINK_STATUS)){	/* link status up? */
++		printf("cable disconnected\n");
++		return FALSE;
++	}
++
++	if (!at91rm9200_EmacReadPhy (p_mac, RTL8201_BMCR, &stat1))
++		return FALSE;
++
++	if (!at91rm9200_EmacReadPhy (p_mac, RTL8201_TEST, &stat2))
++		return FALSE;
++
++	if ((stat1 & RTL8201_DUPLEX_MODE) && (stat2 & RTL8201_LINK100)) {
++		/*set MII for 100BaseTX and Full Duplex  */
++		p_mac->EMAC_CFG |= AT91C_EMAC_SPD | AT91C_EMAC_FD;
++		printf("100baseTX Full Duplex\n");
++		return TRUE;
++	}
++
++	if ((stat1 & RTL8201_DUPLEX_MODE) && (stat2 & RTL8201_LINK10)) {
++		/*set MII for 10BaseT and Full Duplex  */
++		p_mac->EMAC_CFG = (p_mac->EMAC_CFG &
++				~(AT91C_EMAC_SPD | AT91C_EMAC_FD))
++				| AT91C_EMAC_FD;
++		printf("10baseT Full Duplex\n");
++		return TRUE;
++	}
++
++	if ((!(stat1 & RTL8201_DUPLEX_MODE)) && (stat2 & RTL8201_LINK100)) {
++		/*set MII for 100BaseTX and Half Duplex  */
++		p_mac->EMAC_CFG = (p_mac->EMAC_CFG &
++				~(AT91C_EMAC_SPD | AT91C_EMAC_FD))
++				| AT91C_EMAC_SPD;
++		printf("100baseTX Half Duplex\n");
++		return TRUE;
++	}
++
++	if ((!(stat1 & RTL8201_DUPLEX_MODE)) && (stat2 & RTL8201_LINK10)) {
++		/*set MII for 10BaseT and Half Duplex  */
++		p_mac->EMAC_CFG &= ~(AT91C_EMAC_SPD | AT91C_EMAC_FD);
++		printf("10baseT Half Duplex\n");
++		return TRUE;
++	}
++	printf("error\n");
++	return FALSE;
++
++}
++
++
++/*
++ * Name:
++ *	rtl8201_InitPhy
++ * Description:
++ *	MAC starts checking its link by using parallel detection and
++ *	Autonegotiation and the same is set in the MAC configuration registers
++ * Arguments:
++ *	p_mac - pointer to struct AT91S_EMAC
++ * Return value:
++ *	TRUE - if link status set succesfully
++ *	FALSE - if link status not set
++ */
++static UCHAR rtl8201_InitPhy (AT91PS_EMAC p_mac)
++{
++	UCHAR ret = TRUE;
++
++	at91rm9200_EmacEnableMDIO (p_mac);
++
++	if (!rtl8201_GetLinkSpeed (p_mac)) {
++		/* Try another time */
++		ret = rtl8201_GetLinkSpeed (p_mac);
++	}
++
++	at91rm9200_EmacDisableMDIO (p_mac);
++
++	return (ret);
++}
++
++
++/*
++ * Name:
++ *	rtl8201_AutoNegotiate
++ * Description:
++ *	MAC Autonegotiates with the partner status of same is set in the
++ *	MAC configuration registers
++ * Arguments:
++ *	dev - pointer to struct net_device
++ * Return value:
++ *	TRUE - if link status set successfully
++ *	FALSE - if link status not set
++ */
++static UCHAR rtl8201_AutoNegotiate (AT91PS_EMAC p_mac, int *status)
++{
++	return FALSE;
++}
++
++
++/*
++ * Name:
++ *	at91rm9200_GetPhyInterface
++ * Description:
++ *	Initialise the interface functions to the PHY
++ * Arguments:
++ *	None
++ * Return value:
++ *	None
++ */
++void at91rm9200_GetPhyInterface(AT91PS_PhyOps p_phyops)
++{
++	p_phyops->Init = rtl8201_InitPhy;
++	p_phyops->IsPhyConnected = rtl8201_IsPhyConnected;
++	p_phyops->GetLinkSpeed = rtl8201_GetLinkSpeed;
++	p_phyops->AutoNegotiate = rtl8201_AutoNegotiate;
++}
++#endif	/* CONFIG_COMMANDS & CFG_CMD_NET */
++
++#endif	/* CONFIG_DRIVER_ETHER */
+diff -urN u-boot-1.2.0/include/configs/at91rm9200dk.h u-boot-1.2.0-rtl8201/include/configs/at91rm9200dk.h
+--- u-boot-1.2.0/include/configs/at91rm9200dk.h	2007-01-07 02:13:11.000000000 +0300
++++ u-boot-1.2.0-rtl8201/include/configs/at91rm9200dk.h	2018-01-08 18:04:50.734165195 +0300
+@@ -25,6 +25,9 @@
+ #ifndef __CONFIG_H
+ #define __CONFIG_H
+ 
++#define CONFIG_GME920G          1
++
++#define     CONFIG_SKIP_LOWLEVEL_INIT  //because loader/boot have lowlevel init so no need here by wkj 20070607
+ /* ARM asynchronous clock */
+ #define AT91C_MAIN_CLOCK	179712000	/* from 18.432 MHz crystal (18432000 / 4 * 39) */
+ #define AT91C_MASTER_CLOCK	59904000	/* peripheral clock (AT91C_MASTER_CLOCK / 3) */
+@@ -63,14 +66,14 @@
+ #define PIOC_BSR_VAL	0x00000000
+ #define PIOC_PDR_VAL	0xFFFF0000
+ #define EBI_CSA_VAL	0x00000002 /* CS1=SDRAM */
+-#define SDRC_CR_VAL	0x2188c155 /* set up the SDRAM */
++#define SDRC_CR_VAL	0x2188c159 /* set up the SDRAM 2188c155 12*9 128M bit or 2188c159 13*9 256M bit  by wkj 20070607 */
+ #define SDRAM		0x20000000 /* address of the SDRAM */
+ #define SDRAM1		0x20000080 /* address of the SDRAM */
+ #define SDRAM_VAL	0x00000000 /* value written to SDRAM */
+-#define SDRC_MR_VAL	0x00000002 /* Precharge All */
+-#define SDRC_MR_VAL1	0x00000004 /* refresh */
+-#define SDRC_MR_VAL2	0x00000003 /* Load Mode Register */
+-#define SDRC_MR_VAL3	0x00000000 /* Normal Mode */
++#define SDRC_MR_VAL	0x00000012 /* Precharge All //use only 16 bit sdram bus by wkj 20070607 */
++#define SDRC_MR_VAL1	0x00000014 /* refresh //use only 16 bit sdram bus by wkj 20070607*/
++#define SDRC_MR_VAL2	0x00000013 /* Load Mode Register //use only 16 bit sdram bus by wkj 20070607*/
++#define SDRC_MR_VAL3	0x00000010 /* Normal Mode //use only 16 bit sdram bus by wkj 20070607*/
+ #define SDRC_TR_VAL	0x000002E0 /* Write refresh rate */
+ #endif	/* CONFIG_SKIP_LOWLEVEL_INIT */
+ /*
+@@ -96,21 +99,26 @@
+ 
+ #define CONFIG_BOOTDELAY      3
+ /* #define CONFIG_ENV_OVERWRITE	1 */
++#define CONFIG_BOOTARGS    	"root=/dev/ram rw initrd=20a00000,500000 ramdisk_size=32000 console=ttyS0,115200 mem=64M"
++#define CONFIG_ETHADDR		12:34:56:78:9A:BC
++#define CONFIG_NETMASK          255.255.255.0
++#define CONFIG_IPADDR		192.168.1.100
++#define CONFIG_SERVERIP		192.168.1.252
++#define CONFIG_BOOTFILE		"u-boot.bin.gz"
++#define CONFIG_BOOTCOMMAND	"bootm 10020000 10200000"
+ 
+ #define CONFIG_COMMANDS		\
+-		       ((CONFIG_CMD_DFL | CFG_CMD_MII |\
+-			CFG_CMD_DHCP ) & \
++		       ((CONFIG_CMD_DFL | CFG_CMD_MII | CFG_CMD_IMI | CFG_CMD_AUTOSCRIPT | CFG_CMD_LOADS | CFG_CMD_PING |\
++			CFG_CMD_DHCP | CFG_CMD_MISC) & \
+ 		      ~(CFG_CMD_BDI | \
+-			CFG_CMD_IMI | \
+-			CFG_CMD_AUTOSCRIPT | \
+-			CFG_CMD_FPGA | \
+-			CFG_CMD_MISC | \
+-			CFG_CMD_LOADS ))
++			CFG_CMD_FPGA))
++
++#define BOARD_LATE_INIT	1 /* eth initialize in at91rm9200dk.c */
+ 
+ /* this must be included AFTER the definition of CONFIG_COMMANDS (if any) */
+ #include <cmd_confdefs.h>
+ 
+-#define CFG_MAX_NAND_DEVICE	1	/* Max number of NAND devices		*/
++#define CFG_MAX_NAND_DEVICE	0	/* Max number of NAND devices		*/
+ #define SECTORSIZE 512
+ 
+ #define ADDR_COLUMN 1
+@@ -141,16 +149,18 @@
+ 
+ #define CONFIG_NR_DRAM_BANKS 1
+ #define PHYS_SDRAM 0x20000000
+-#define PHYS_SDRAM_SIZE 0x2000000  /* 32 megs */
++#define PHYS_SDRAM_SIZE 0x4000000  /* 64 megs */
+ 
+ #define CFG_MEMTEST_START		PHYS_SDRAM
+ #define CFG_MEMTEST_END			CFG_MEMTEST_START + PHYS_SDRAM_SIZE - 262144
++#define CFG_ALT_MEMTEST                 1 
+ 
+ #define CONFIG_DRIVER_ETHER
+ #define CONFIG_NET_RETRY_COUNT		20
+-#define CONFIG_AT91C_USE_RMII
++#undef CONFIG_AT91C_USE_RMII
+ 
+-#define CONFIG_HAS_DATAFLASH		1
++//#define CONFIG_HAS_DATAFLASH		0
++#undef CONFIG_HAS_DATAFLASH
+ #define CFG_SPI_WRITE_TOUT		(5*CFG_HZ)
+ #define CFG_MAX_DATAFLASH_BANKS 	2
+ #define CFG_MAX_DATAFLASH_PAGES 	16384
+@@ -158,12 +168,12 @@
+ #define CFG_DATAFLASH_LOGIC_ADDR_CS3	0xD0000000	/* Logical adress for CS3 */
+ 
+ #define PHYS_FLASH_1			0x10000000
+-#define PHYS_FLASH_SIZE			0x200000  /* 2 megs main flash */
++#define PHYS_FLASH_SIZE			0x800000  /* 8 megs main flash */
+ #define CFG_FLASH_BASE			PHYS_FLASH_1
+ #define CFG_MAX_FLASH_BANKS		1
+ #define CFG_MAX_FLASH_SECT		256
+-#define CFG_FLASH_ERASE_TOUT		(2*CFG_HZ) /* Timeout for Flash Erase */
+-#define CFG_FLASH_WRITE_TOUT		(2*CFG_HZ) /* Timeout for Flash Write */
++#define CFG_FLASH_ERASE_TOUT		(5*CFG_HZ) /* Timeout for Flash Erase */
++#define CFG_FLASH_WRITE_TOUT		(5*CFG_HZ) /* Timeout for Flash Write */
+ 
+ #undef	CFG_ENV_IS_IN_DATAFLASH
+ 
+@@ -174,8 +184,8 @@
+ #else
+ #define CFG_ENV_IS_IN_FLASH		1
+ #ifdef CONFIG_SKIP_LOWLEVEL_INIT
+-#define CFG_ENV_ADDR			(PHYS_FLASH_1 + 0x60000)  /* after u-boot.bin */
+-#define CFG_ENV_SIZE			0x10000 /* sectors are 64K here */
++#define CFG_ENV_ADDR			(PHYS_FLASH_1 + 0xe000)  /* between boot.bin and u-boot.bin.gz */
++#define CFG_ENV_SIZE			0x2000  /* 1000E000 (RO) - 1000FFFF */
+ #else
+ #define CFG_ENV_ADDR			(PHYS_FLASH_1 + 0xe000)  /* between boot.bin and u-boot.bin.gz */
+ #define CFG_ENV_SIZE			0x2000  /* 0x8000 */
+@@ -186,9 +196,9 @@
+ #define CFG_LOAD_ADDR		0x21000000  /* default load address */
+ 
+ #ifdef CONFIG_SKIP_LOWLEVEL_INIT
+-#define CFG_BOOT_SIZE		0x00 /* 0 KBytes */
+-#define CFG_U_BOOT_BASE		PHYS_FLASH_1
+-#define CFG_U_BOOT_SIZE		0x60000 /* 384 KBytes */
++#define CFG_BOOT_SIZE		0x6000 /* 24 KBytes */   /* 10000000 (RO) 10002000 (RO) 10004000 (RO) - 10005FFF */ 
++#define CFG_U_BOOT_BASE		(PHYS_FLASH_1 + 0x10000) /* 10010000 (RO) - 1001FFFF */
++#define CFG_U_BOOT_SIZE		0x10000 /* 64 KBytes */
+ #else
+ #define CFG_BOOT_SIZE		0x6000 /* 24 KBytes */
+ #define CFG_U_BOOT_BASE		(PHYS_FLASH_1 + 0x10000)
+diff -urN u-boot-1.2.0/include/flash.h u-boot-1.2.0-rtl8201/include/flash.h
+--- u-boot-1.2.0/include/flash.h	2007-01-07 02:13:11.000000000 +0300
++++ u-boot-1.2.0-rtl8201/include/flash.h	2007-08-17 17:39:24.000000000 +0400
+@@ -201,6 +201,9 @@
+ #define AMD_ID_MIRROR	0x227E227E	/* 1st ID word for MirrorBit family */
+ #define AMD_ID_DL640G_2 0x22022202	/* 2nd ID word for AM29DL640G  at 0x38 */
+ #define AMD_ID_DL640G_3 0x22012201	/* 3rd ID word for AM29DL640G  at 0x3c */
++#define AMD_ID_GL128M_2 0x22212221     /* 2nd ID word for S29GL128M-R2 */
++#define AMD_ID_GL128M_3 0x22012201     /* 3rd ID word for S29GL128M-R2 */
++
+ #define AMD_ID_LV640U_2 0x220C220C	/* 2nd ID word for AM29LV640M  at 0x38 */
+ #define AMD_ID_LV640U_3 0x22012201	/* 3rd ID word for AM29LV640M  at 0x3c */
+ #define AMD_ID_LV640MT_2 0x22102210	/* 2nd ID word for AM29LV640MT at 0x38 */
+@@ -426,6 +429,7 @@
+ #define FLASH_FUJLV650	0x00D0		/* Fujitsu MBM 29LV650UE/651UE		*/
+ #define FLASH_MT28S4M16LC 0x00E1	/* Micron MT28S4M16LC			*/
+ #define FLASH_S29GL064M 0x00F0		/* Spansion S29GL064M-R6		*/
++#define FLASH_S29GL128M 0x227E         /* Spansion S29GL128M           */
+ #define FLASH_S29GL128N 0x00F1		/* Spansion S29GL128N			*/
+ 
+ #define FLASH_UNKNOWN	0xFFFF		/* unknown flash type			*/
+@@ -463,7 +467,7 @@
+  * We can't find any specifications for maximum chip erase times,
+  * so these values are guestimates.
+  */
+-#define FLASH_ERASE_TIMEOUT	120000	/* timeout for erasing in ms		*/
++#define FLASH_ERASE_TIMEOUT	420000	/* timeout for erasing in ms		*/
+ #define FLASH_WRITE_TIMEOUT	500	/* timeout for writes  in ms		*/
+ 
+ #endif /* !CFG_NO_FLASH */
+diff -urN u-boot-1.2.0/include/rtl8201.h u-boot-1.2.0-rtl8201/include/rtl8201.h
+--- u-boot-1.2.0/include/rtl8201.h	1970-01-01 03:00:00.000000000 +0300
++++ u-boot-1.2.0-rtl8201/include/rtl8201.h	2007-08-17 17:39:24.000000000 +0400
+@@ -0,0 +1,126 @@
++/*
++ * NOTE:	RTL8201 ethernet Physical layer
++ *
++ * Version:	@(#)rtl8201.h	1.0.0	01/10/2001
++ *
++ * Authors:	ATMEL Rousset
++ *
++ *
++ *		This program is free software; you can redistribute it and/or
++ *		modify it under the terms of the GNU General Public License
++ *		as published by the Free Software Foundation; either version
++ *		2 of the License, or (at your option) any later version.
++ */
++
++
++#define	RTL8201_BMCR 		0	/* Basic Mode Control Register */
++#define RTL8201_BMSR		1	/* Basic Mode Status Register */
++#define RTL8201_PHYID1		2	/* PHY Idendifier Register 1 */
++#define RTL8201_PHYID2		3	/* PHY Idendifier Register 2 */
++#define RTL8201_ANAR		4	/* Auto_Negotiation Advertisement Register  */
++#define RTL8201_ANLPAR		5	/* Auto_negotiation Link Partner Ability Register */
++#define RTL8201_ANER		6	/* Auto-negotiation Expansion Register  */
++#define RTL8201_TEST		25
++
++/* --Bit definitions: RTL8201_BMCR */
++#define RTL8201_RESET  	          (1 << 15)	/* 1= Software Reset; 0=Normal Operation */
++#define RTL8201_LOOPBACK          (1 << 14)	/* 1=loopback Enabled; 0=Normal Operation */
++#define RTL8201_SPEED_SELECT      (1 << 13)	/* 1=100Mbps; 0=10Mbps */
++#define RTL8201_AUTONEG	          (1 << 12)
++#define RTL8201_POWER_DOWN        (1 << 11)
++#define RTL8201_RESTART_AUTONEG   (1 << 9)
++#define RTL8201_DUPLEX_MODE       (1 << 8)
++
++/*--Bit definitions: RTL8201_BMSR */
++#define RTL8201_100BASE_T4        (1 << 15)
++#define RTL8201_100BASE_TX_FD     (1 << 14)
++#define RTL8201_100BASE_T4_HD     (1 << 13)
++#define RTL8201_10BASE_T_FD       (1 << 12)
++#define RTL8201_10BASE_T_HD       (1 << 11)
++#define RTL8201_MF_PREAMB_SUPPR   (1 << 6)
++#define RTL8201_AUTONEG_COMP      (1 << 5)
++#define RTL8201_REMOTE_FAULT      (1 << 4)
++#define RTL8201_AUTONEG_ABILITY   (1 << 3)
++#define RTL8201_LINK_STATUS       (1 << 2)
++#define RTL8201_JABBER_DETECT     (1 << 1)
++#define RTL8201_EXTEND_CAPAB      (1 << 0)
++
++/*--definitions: RTL8201_PHYID1 */
++#define RTL8201_PHYID1_OUI	 0x0000
++#define RTL8201_PHYID2_OUI	 0x8201
++
++/*--Bit definitions: RTL8201_ANAR, RTL8201_ANLPAR */
++#define RTL8201_NP               (1 << 15)
++#define RTL8201_ACK              (1 << 14)
++#define RTL8201_RF               (1 << 13)
++#define RTL8201_FCS              (1 << 10)
++#define RTL8201_T4               (1 << 9)
++#define RTL8201_TX_FDX           (1 << 8)
++#define RTL8201_TX_HDX           (1 << 7)
++#define RTL8201_10_FDX           (1 << 6)
++#define RTL8201_10_HDX           (1 << 5)
++#define RTL8201_AN_IEEE_802_3	0x0001
++
++/*--Bit definitions: RTL8201_ANER */
++#define RTL8201_PDF              (1 << 4)
++#define RTL8201_LP_NP_ABLE       (1 << 3)
++#define RTL8201_NP_ABLE          (1 << 2)
++#define RTL8201_PAGE_RX          (1 << 1)
++#define RTL8201_LP_AN_ABLE       (1 << 0)
++
++
++/*--Bit definitions: RTL8201_TEST */
++#define RTL8201_LINK10		 (1 << 1)
++#define RTL8201_LINK100		 (1 << 0)
++
++#if 0
++/*--Bit definitions: RTL8201_DSCR */
++#define RTL8201_BP4B5B           (1 << 15)
++#define RTL8201_BP_SCR           (1 << 14)
++#define RTL8201_BP_ALIGN         (1 << 13)
++#define RTL8201_BP_ADPOK         (1 << 12)
++#define RTL8201_REPEATER         (1 << 11)
++#define RTL8201_TX               (1 << 10)
++#define RTL8201_RMII_ENABLE      (1 << 8)
++#define RTL8201_F_LINK_100       (1 << 7)
++#define RTL8201_SPLED_CTL        (1 << 6)
++#define RTL8201_COLLED_CTL       (1 << 5)
++#define RTL8201_RPDCTR_EN        (1 << 4)
++#define RTL8201_SM_RST           (1 << 3)
++#define RTL8201_MFP SC           (1 << 2)
++#define RTL8201_SLEEP            (1 << 1)
++#define RTL8201_RLOUT            (1 << 0)
++
++/*--Bit definitions: RTL8201_DSCSR */
++#define RTL8201_100FDX           (1 << 15)
++#define RTL8201_100HDX           (1 << 14)
++#define RTL8201_10FDX            (1 << 13)
++#define RTL8201_10HDX            (1 << 12)
++
++/*--Bit definitions: RTL8201_10BTCSR */
++#define RTL8201_LP_EN           (1 << 14)
++#define RTL8201_HBE             (1 << 13)
++#define RTL8201_SQUELCH         (1 << 12)
++#define RTL8201_JABEN           (1 << 11)
++#define RTL8201_10BT_SER        (1 << 10)
++#define RTL8201_POLR            (1 << 0)
++
++
++/*--Bit definitions: RTL8201_MDINTR */
++#define RTL8201_INTR_PEND       (1 << 15)
++#define RTL8201_FDX_MASK        (1 << 11)
++#define RTL8201_SPD_MASK        (1 << 10)
++#define RTL8201_LINK_MASK       (1 << 9)
++#define RTL8201_INTR_MASK       (1 << 8)
++#define RTL8201_FDX_CHANGE      (1 << 4)
++#define RTL8201_SPD_CHANGE      (1 << 3)
++#define RTL8201_LINK_CHANGE     (1 << 2)
++#define RTL8201_INTR_STATUS     (1 << 0)
++
++#endif
++
++/******************  function prototypes **********************/
++static unsigned int rtl8201_IsPhyConnected(AT91PS_EMAC p_mac);
++static unsigned char rtl8201_GetLinkSpeed(AT91PS_EMAC p_mac);
++static unsigned char rtl8201_AutoNegotiate(AT91PS_EMAC p_mac, int *status);
++static unsigned char rtl8201_InitPhy(AT91PS_EMAC p_mac);
+diff -urN u-boot-1.2.0/lib_arm/armlinux.c u-boot-1.2.0-rtl8201/lib_arm/armlinux.c
+--- u-boot-1.2.0/lib_arm/armlinux.c	2007-01-07 02:13:11.000000000 +0300
++++ u-boot-1.2.0-rtl8201/lib_arm/armlinux.c	2018-01-08 17:09:53.131783192 +0300
+@@ -167,7 +167,7 @@
+ 			do_reset (cmdtp, flag, argc, argv);
+ 		}
+ 
+-#if defined(CONFIG_B2) || defined(CONFIG_EVB4510) || defined(CONFIG_ARMADILLO)
++#if defined(CONFIG_B2) || defined(CONFIG_EVB4510) || defined(CONFIG_ARMADILLO) || defined(CONFIG_GME920G)
+ 		/*
+ 		 *we need to copy the ramdisk to SRAM to let Linux boot
+ 		 */
